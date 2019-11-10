@@ -1,39 +1,33 @@
-export interface Employee {
-  name: string;
-  role: string;
-  age: number;
-}
-export interface TreeNode {
-  data: Employee;
-  parent?: TreeNode;
-  children: TreeNode[];
-}
+import { TreeNode, IsEqual } from './types';
 
-export class Tree {
-  root: TreeNode;
-  constructor(employee: Employee) {
+export class Tree<T> {
+  root: TreeNode<T>;
+  traversalIndex = 0;
+  constructor(employee: T, public isEqual: IsEqual<T>) {
     this.root = {
       data: employee,
       children: []
     };
   }
 
-  traverseBFS(callback: (node: TreeNode) => void) {
-    const queue: TreeNode[] = [];
+  traverseBFS(callback: (node: TreeNode<T>) => void) {
+    const queue: TreeNode<T>[] = [];
     queue.push(this.root);
     while (queue.length > 0) {
       const node = queue.shift();
       if (node) {
+        node.data.index = this.traversalIndex;
         callback(node);
         if (node.children.length > 0) {
           queue.push(...node.children);
         }
+        this.traversalIndex++;
       }
     }
   }
 
-  traverseDFS(callback: (node: TreeNode) => void) {
-    const stack: TreeNode[] = [];
+  traverseDFS(callback: (node: TreeNode<T>) => void) {
+    const stack: TreeNode<T>[] = [];
     stack.push(this.root);
     while (stack.length > 0) {
       const node = stack.pop();
@@ -46,21 +40,20 @@ export class Tree {
     }
   }
 
-  add(employee: Employee, toEmployee: Employee) {
-    const child: TreeNode = {
+  add(employee: T, toEmployee: T) {
+    const child: TreeNode<T> = {
       data: employee,
       children: []
     };
-    let parent: TreeNode | undefined;
+    let parent: TreeNode<T> | undefined;
     let count = 0;
     this.traverseBFS(node => {
       count++;
       const { data } = node;
-      if (data.name === toEmployee.name && data.role === toEmployee.role) {
+      if (this.isEqual(data, toEmployee)) {
         parent = node;
       }
     });
-    console.log('count tree callback', count);
     if (parent) {
       child.parent = parent;
       parent.children.push(child);
@@ -69,17 +62,11 @@ export class Tree {
     }
   }
 
-  remove(employee: Employee, fromEmployee: Employee) {
-    let child: TreeNode | undefined;
+  remove(employee: T, fromEmployee: T) {
+    let child: TreeNode<T> | undefined;
     this.traverseBFS(node => {
       const { data, parent } = node;
-      if (
-        parent &&
-        parent.data.name === fromEmployee.name &&
-        parent.data.role === fromEmployee.role &&
-        data.name === employee.name &&
-        data.role === employee.role
-      ) {
+      if (parent && this.isEqual(parent.data, fromEmployee) && this.isEqual(data, employee)) {
         child = node;
       }
     });
