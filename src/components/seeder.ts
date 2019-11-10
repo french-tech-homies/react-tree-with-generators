@@ -1,39 +1,41 @@
-import { Tree, TreeNode } from './Tree';
+import { IsEqual, Employee } from './types';
+import { Tree } from './Tree';
 import { TreeWithGenerators } from './TreeWithGenerators';
+import uuid from 'uuid/v4';
 
-const ceo = { age: 20, name: 'Julia', role: 'CEO' };
-const cto = { name: 'Ruben', role: 'CTO', age: 22 };
+const ceo = { id: uuid(), name: 'Julia', role: 'CEO' };
+const cto = { id: uuid(), name: 'Ruben', role: 'CTO' };
+const isEqual: IsEqual<Employee> = (a, b) => a.id === b.id;
+export const simpleTree = new Tree(ceo, isEqual);
+export const treeWithGenerators = new TreeWithGenerators(ceo, isEqual);
 
-export const simpleTree = new Tree(ceo);
-export const treeWithGenerators = new TreeWithGenerators(ceo);
-
-simpleTree.add({ name: 'Rachel', role: 'CFO', age: 45 }, ceo);
-treeWithGenerators.add({ name: 'Rachel', role: 'CFO', age: 45 }, ceo);
+simpleTree.add({ id: uuid(), name: 'Rachel', role: 'CFO' }, ceo);
+treeWithGenerators.add({ id: uuid(), name: 'Rachel', role: 'CFO' }, ceo);
 
 simpleTree.add(cto, ceo);
 treeWithGenerators.add(cto, ceo);
 
-simpleTree.add({ name: 'Julien', role: 'COO', age: 31 }, ceo);
-treeWithGenerators.add({ name: 'Julien', role: 'COO', age: 31 }, ceo);
+simpleTree.add({ id: uuid(), name: 'Julien', role: 'COO' }, ceo);
+treeWithGenerators.add({ id: uuid(), name: 'Julien', role: 'COO' }, ceo);
 
-simpleTree.add({ name: 'Amelie', role: 'CIO', age: 34 }, ceo);
-treeWithGenerators.add({ name: 'Amelie', role: 'CIO', age: 34 }, ceo);
+simpleTree.add({ id: uuid(), name: 'Amelie', role: 'CIO' }, ceo);
+treeWithGenerators.add({ id: uuid(), name: 'Amelie', role: 'CIO' }, ceo);
 
-simpleTree.add({ name: 'Alex', age: 31, role: 'Team lead' }, cto);
-treeWithGenerators.add({ name: 'Alex', age: 31, role: 'Team lead' }, cto);
+simpleTree.add({ id: uuid(), name: 'Alex', role: 'Team lead' }, cto);
+treeWithGenerators.add({ id: uuid(), name: 'Alex', role: 'Team lead' }, cto);
 
-simpleTree.add({ name: 'Emily', age: 24, role: 'Team lead' }, cto);
-treeWithGenerators.add({ name: 'Emily', age: 24, role: 'Team lead' }, cto);
+simpleTree.add({ id: uuid(), name: 'Emily', role: 'Team lead' }, cto);
+treeWithGenerators.add({ id: uuid(), name: 'Emily', role: 'Team lead' }, cto);
 
-simpleTree.add({ name: 'Sami', age: 30, role: 'Team lead' }, cto);
-treeWithGenerators.add({ name: 'Sami', age: 30, role: 'Team lead' }, cto);
+simpleTree.add({ id: uuid(), name: 'Sami', role: 'Team lead' }, cto);
+treeWithGenerators.add({ id: uuid(), name: 'Sami', role: 'Team lead' }, cto);
 
 // tree.remove(cto, ceo);
 
-simpleTree.traverseBFS(node => {
-  console.log(node.data.role, node.data.name);
-});
-console.log('-----------');
-simpleTree.traverseDFS(node => {
-  console.log(node.data.role, node.data.name);
-});
+// simpleTree.traverseBFS(node => {
+//   console.log(node.data.role, node.data.name);
+// });
+// console.log('-----------');
+// simpleTree.traverseDFS(node => {
+//   console.log(node.data.role, node.data.name);
+// });
