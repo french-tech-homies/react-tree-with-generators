@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react';
-import { TreeNode } from './Tree';
+import React from 'react';
 import * as d3 from 'd3';
-// import './treeViz.css';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, createStyles } from '@material-ui/core';
+import { TreeNode, Employee } from './types';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -27,24 +26,16 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 interface TreeVizProps {
-  rootNode: TreeNode;
-  onNodeClick?: (node: TreeNode) => void;
-  onTreeLoaded?: (tree: d3.HierarchyPointNode<TreeNode>) => void;
+  rootNode: TreeNode<Employee>;
+  onNodeClick?: (node: TreeNode<Employee>) => void;
+  onTreeLoaded?: (tree: d3.HierarchyPointNode<TreeNode<Employee>>) => void;
 }
 export const TreeViz: React.FC<TreeVizProps> = ({ rootNode, onNodeClick, onTreeLoaded }) => {
   const classes = useStyles();
-  const tree = d3.tree<TreeNode>().size([800, 600]);
-  console.log(rootNode);
-
+  const tree = d3.tree<TreeNode<Employee>>().size([800, 600]);
   const hierarchy = d3.hierarchy(rootNode);
-  console.log(hierarchy);
-
   const root = tree(hierarchy);
-  console.log(root);
-  // useEffect(() => {
-  //   if (onTreeLoaded) onTreeLoaded(root);
-  // });
-  // console.log('treenode', root);
+
   return (
     <svg width={800} height={800}>
       <g className={classes.mainGroup}>
@@ -88,6 +79,9 @@ export const TreeViz: React.FC<TreeVizProps> = ({ rootNode, onNodeClick, onTreeL
                   if (onNodeClick) onNodeClick(node.data);
                 }}
               ></circle>
+              <text x={node.x} y={node.y} style={{ textAnchor: 'middle', fontSize: 11 }}>
+                {node.data.data.index}
+              </text>
               <text
                 x={node.x}
                 y={node.y + 40}
