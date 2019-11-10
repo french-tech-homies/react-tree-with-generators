@@ -1,32 +1,25 @@
-interface Employee {
-  name: string;
-  role: string;
-  age: number;
-}
-interface TreeNode {
-  data: Employee;
-  parent?: TreeNode;
-  children: TreeNode[];
-}
+import { TreeNode, IsEqual } from './types';
 
-export class TreeWithGenerators {
-  root: TreeNode;
-  size = 0;
-  constructor(employee: Employee) {
+export class TreeWithGenerators<T> {
+  root: TreeNode<T>;
+  traversalIndex = 0;
+  constructor(employee: T, public isEqual: IsEqual<T>) {
     this.root = {
       data: employee,
       children: []
     };
-    this.size++;
   }
 
   *traverseBFS() {
-    const queue: TreeNode[] = [];
+    this.traversalIndex = 0;
+    const queue: TreeNode<T>[] = [];
     queue.push(this.root);
     while (queue.length > 0) {
       const node = queue.shift();
       if (node) {
         yield node;
+        node.data.index = this.traversalIndex;
+        this.traversalIndex++;
         if (node.children.length > 0) {
           queue.push(...node.children);
         }
@@ -35,60 +28,75 @@ export class TreeWithGenerators {
   }
 
   *traverseDFS() {
-    const stack: TreeNode[] = [];
+    this.traversalIndex = 0;
+    const stack: TreeNode<T>[] = [];
     stack.push(this.root);
     while (stack.length > 0) {
       const node = stack.pop();
       if (node) {
+        node.data.index = this.traversalIndex;
         yield node;
+        this.traversalIndex++;
         if (node.children) {
-          stack.push(...node.children);
+          for (let i = node.children.length - 1; i >= 0; i--) {
+            const child = node.children[i];
+            stack.push(child);
+          }
         }
       }
     }
   }
 
-  add(employee: Employee, toEmployee: Employee) {
-    const child: TreeNode = {
+  add(employee: T, toEmployee: T) {
+    const child: TreeNode<T> = {
       data: employee,
       children: []
     };
-    let count = 0;
+    const iterator = this.traverseBFS();
+    let current = iterator.next();
+    let found = false;
+    let parent: TreeNode<T> | undefined;
 
-    const parent = [...this.traverseBFS()].find(({ data }) => {
-      count++;
-      return data.name === toEmployee.name && data.role === toEmployee.role;
-    });
-    console.log('count', count);
+    while (!found && !current.done) {
+      if (current.value) {
+        if (this.isEqual(current.value.data, toEmployee)) {
+          parent = current.value;
+          found = true;
+        }
+      }
+      current = iterator.next();
+    }
     if (parent) {
       child.parent = parent;
       parent.children.push(child);
-      this.size++;
     } else {
       throw new Error('Unable to add node to non existing parent');
     }
   }
 
-  remove(employee: Employee, fromEmployee: Employee) {
+  remove(employee: T, fromEmployee: T) {
     const child = [...this.traverseBFS()].find(
-      ({ data, parent }) =>
-        parent &&
-        parent.data.name === fromEmployee.name &&
-        parent.data.role === fromEmployee.role &&
-        data.name === employee.name &&
-        data.role === employee.role
+      ({ data, parent }) => parent && this.isEqual(parent.data, fromEmployee) && this.isEqual(data, employee)
     );
 
     if (child) {
       if (child.parent) {
         const idx = child.parent.children.indexOf(child);
         child.parent.children.splice(idx, 1);
-        this.size--;
       } else {
         throw new Error('Unable to find parent');
       }
     } else {
       throw new Error('Unable to find node');
+    }
+  }
+
+  cleanIndexes() {
+    const iterator = this.traverseBFS();
+    let current = iterator.next();
+    while (!current.done) {
+      current.value.data.index = undefined;
+      current = iterator.next();
     }
   }
 }
